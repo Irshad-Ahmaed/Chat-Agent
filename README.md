@@ -46,6 +46,10 @@ GET /chat/history/:sessionId
 └── Gemini AI — generates support responses with memory context
 
 ---
+
+[![Visualization System Flow](./assests/flow.png)](https://app.eraser.io/workspace/tFXCU2MK1Kfi3kMhjPXy)
+
+---
 ## Local Development Setup
 
 ### Clone Repo
