@@ -25,23 +25,33 @@ async function getHistory(conversationId: string) {
   return mapped.join("\n");
 }
 
-async function updateCache(conversationId: string, sender: string, text: string) {
+async function updateCache(
+  conversationId: string,
+  sender: string,
+  text: string
+) {
   await redis.rpush(conversationId, `${sender}: ${text}`);
   await redis.ltrim(conversationId, -HISTORY_LIMIT, -1); // keep only last 10 messages
   redis.expire(conversationId, 3600); // 1hr expiry
 }
 
 export async function handleMessage(sessionId: string | null, message: string) {
-  let conversationId = await prisma.conversation.findFirst({
-    where: sessionId ? { id: sessionId } : {},
-  }).then(convo => convo?.id);
-  
+  let conversationId: string | null = null;
+
+  if (sessionId) {
+    const existing = await prisma.conversation.findUnique({
+      where: { id: sessionId },
+    });
+    if (existing) conversationId = existing.id;
+  }
+
   let initialPrompt = "";
 
   if (!conversationId) {
     const convo = await prisma.conversation.create({ data: {} });
     conversationId = convo.id;
-    initialPrompt = "The user just arrived. Give a warm welcome and help proactively.";
+    initialPrompt =
+      "The user just arrived. Give a warm welcome and help proactively.";
   }
 
   // Save user message
